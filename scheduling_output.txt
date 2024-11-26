@@ -1,4 +1,50 @@
-Minimum distance: 154434.9
+Minimum distance: 154434.9 
+
+Team 0:
+ Home games: 6.0
+ Away games: 14.0
+Team 1:
+ Home games: 7.0
+ Away games: 13.0
+Team 2:
+ Home games: 9.0
+ Away games: 11.0
+Team 3:
+ Home games: 9.0
+ Away games: 11.0
+Team 4:
+ Home games: 14.0
+ Away games: 6.0
+Team 5:
+ Home games: 11.0
+ Away games: 9.0
+Team 6:
+ Home games: 11.0
+ Away games: 9.0
+Team 7:
+ Home games: 14.0
+ Away games: 6.0
+Team 8:
+ Home games: 14.0
+ Away games: 6.0
+Team 9:
+ Home games: 11.0
+ Away games: 9.0
+Team 10:
+ Home games: 10.0
+ Away games: 10.0
+Team 11:
+ Home games: 5.0
+ Away games: 15.0
+Team 12:
+ Home games: 8.0
+ Away games: 12.0
+Team 13:
+ Home games: 8.0
+ Away games: 12.0
+Team 14:
+ Home games: 13.0
+ Away games: 7.0
 
 Schedule grouped by teams: 
 

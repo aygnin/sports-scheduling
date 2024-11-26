@@ -104,7 +104,12 @@ m.optimize()
 with open("scheduling_output.txt", "w") as file:
     # Optimal value
     print(m.status == GRB.OPTIMAL)
-    print(f"Minimum distance: {m.objVal}", file=file)
+    print(f"Minimum distance: {m.objVal} \n", file=file)
+    # Home and away games
+    for i in range(0, n_teams):
+        print(f"Team {i}:", file=file)
+        print(f" Home games: {h[i].X:=2}", file=file)
+        print(f" Away games: {a[i].X:=2}", file=file)
     # Schedule grouped by teams
     print("\nSchedule grouped by teams: \n", file=file)
     for i in range(0, n_teams):
