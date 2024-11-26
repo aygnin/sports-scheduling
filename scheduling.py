@@ -5,6 +5,12 @@ from gurobipy import GRB
 m = gp.Model("model")
 
 
+#Initialize the parameters
+lambda_val = 0.0001
+E = []
+gamma = float("-inf")
+
+
 # Set up the data
 # Given data from league
 n_teams = 15
@@ -24,7 +30,7 @@ for line in data:
     split_line = line.split(", ")
     row = []
     for i in range(0, n_teams): 
-        row.append(float(split_line[i]))
+        row.append(round(float(split_line[i])))
     distance.append(row)   
 
 
@@ -33,8 +39,10 @@ for line in data:
 x = m.addVars(n_teams, n_teams, time, vtype = GRB.BINARY, name = "x")
 # Number of home games for each team
 h = m.addVars(n_teams, vtype = GRB.INTEGER, name = "h")
-# Number of home games for each team
+# Number of away games for each team
 a = m.addVars(n_teams, vtype = GRB.INTEGER, name = "a")
+# Difference between home and away games for each team
+dif_ha = m.addVars(n_teams, vtype = GRB.INTEGER, name = "dif_ha")
 
 
 # Set the objective function to minimize total distance travelled by all teams
@@ -43,7 +51,10 @@ for j in range(0, n_teams):
     for i in range (0, n_teams):
         for t in range (0, time):
             total_distance += x[i, j, t] * (distance[j][i] + distance[i][j])
-m.setObjective(total_distance, GRB.MINIMIZE)
+home_away = 0
+for i in range (0, n_teams):
+    home_away += dif_ha[i]
+m.setObjective(lambda_val * home_away + (1 - lambda_val) * total_distance, GRB.MINIMIZE)
 
 
 # Add the constraints
@@ -61,6 +72,10 @@ for j in range(0, n_teams):
         for t in range (0, time): 
             away += x[i, j, t]
     m.addConstr(a[j] == away, f"away{i}")
+# Take the absolute difference between home and away games for each team
+for i in range(0, n_teams):
+    m.addConstr(dif_ha[i] >= h[i] - a[i], f"dif_ha{i}")
+    m.addConstr(dif_ha[i] >= a[i] - h[i], f"dif_ah{i}")
 # Each team cannot play itself
 for i in range(0, n_teams):
     for j in range (0, n_teams):
@@ -90,11 +105,9 @@ for i in range(0, n_teams):
         if (i != j):
             m.addConstr(pairings >= minpairing, f"minpairing{i}{j}")
             m.addConstr(pairings <= maxpairing, f"maxpairing{i}{j}")
-# If one team plays another team multiple times, proportion of home/away games must be equal
-    # TO DO
-            
 
-# Solve the model!
+        
+# Solve the model! # TO DO: change to epsilon constrained method
 m.optimize()
 # m.computeIIS()
 # m.write("iis_report.ilp")
@@ -102,8 +115,8 @@ m.optimize()
 
 # Print the results to a file
 with open("scheduling_output.txt", "w") as file:
-    # Optimal value
     print(m.status == GRB.OPTIMAL)
+    # Optimal value
     print(f"Minimum distance: {m.objVal} \n", file=file)
     # Home and away games
     for i in range(0, n_teams):
