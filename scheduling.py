@@ -100,34 +100,37 @@ m.optimize()
 # m.write("iis_report.ilp")
 
 
-# Print the results
-# Optimal value
-print(str(m.status == GRB.OPTIMAL) + "\n")
-print("Optimal value: " + str(m.objVal) + "\n")
-# Schedule grouped by teams
-for i in range(0, n_teams):
-    print(f"Team {i}:")
-    for j in range(0, n_teams):
-        if (i == j):
-                pass
-        else:
-            print(f" Games vs Team {j:=2}: ", end="")
-            for t in range(0, time):
-                if x[i, j, t].x == 1:
-                    print(f"{t:=2} (Home) ", end="")
-                elif x[j, i, t].x == 1:
-                    print(f"{t:=2} (Away) ", end="")
-            print()
-# Schedule grouped by timeslots      
-for t in range(time):
-    print(f"Time Slot {t}:")
-    playing_teams = set()
+# Print the results to a file
+with open("scheduling_output.txt", "w") as file:
+    # Optimal value
+    print(m.status == GRB.OPTIMAL)
+    print(f"Minimum distance: {m.objVal}", file=file)
+    # Schedule grouped by teams
+    print("\nSchedule grouped by teams: \n", file=file)
     for i in range(0, n_teams):
+        print(f"Team {i}:", file=file)
         for j in range(0, n_teams):
-            if x[i, j, t].x == 1:
-                print(f" Team {i:=2} (Home) vs Team {j:=2} (Away)")
-                playing_teams.add(i)
-                playing_teams.add(j)
-    for team in range(n_teams):
-        if team not in playing_teams:
-            print(f" Team {team:=2} not playing")
+            if (i == j):
+                    pass
+            else:
+                print(f" Games vs Team {j:=2}: ", end="", file=file)
+                for t in range(0, time):
+                    if x[i, j, t].x == 1:
+                        print(f"{t:=2} (Home) ", end="", file=file)
+                    elif x[j, i, t].x == 1:
+                        print(f"{t:=2} (Away) ", end="", file=file)
+                print("", file=file)
+    # Schedule grouped by timeslots
+    print("\nSchedule grouped by timeslots: \n", file=file)
+    for t in range(time):
+        print(f"Time Slot {t}:", file=file)
+        playing_teams = set()
+        for i in range(0, n_teams):
+            for j in range(0, n_teams):
+                if x[i, j, t].x == 1:
+                    print(f" Team {i:=2} (Home) vs Team {j:=2} (Away)", file=file)
+                    playing_teams.add(i)
+                    playing_teams.add(j)
+        for team in range(n_teams):
+            if team not in playing_teams:
+                print(f" Team {team:=2} not playing", file=file)
