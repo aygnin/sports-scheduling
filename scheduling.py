@@ -39,10 +39,10 @@ a = m.addVars(n_teams, vtype = GRB.INTEGER, name = "a")
 
 # Set the objective function to minimize total distance travelled by all teams
 total_distance = 0
-for i in range(0, n_teams):
-    for j in range (0, n_teams):
+for j in range(0, n_teams):
+    for i in range (0, n_teams):
         for t in range (0, time):
-            total_distance += x[i, j, t] * (distance[i][j] + distance[j][i])
+            total_distance += x[i, j, t] * (distance[j][i] + distance[i][j])
 m.setObjective(total_distance, GRB.MINIMIZE)
 
 
