@@ -5,10 +5,12 @@ from gurobipy import GRB
 m = gp.Model("model")
 
 
-#Initialize the parameters
+#Initialize the parameters for epsilon constrained method
 lambda_val = 0.0001
 E = []
-gamma = float("-inf")
+min_distance = []
+min_home_away = []
+gamma = float("inf")
 
 
 # Set up the data
@@ -108,47 +110,68 @@ for i in range(0, n_teams):
 
         
 # Solve the model! # TO DO: change to epsilon constrained method
-m.optimize()
+# m.optimize()
 # m.computeIIS()
 # m.write("iis_report.ilp")
 
 
-# Print the results to a file
-with open("scheduling_output.txt", "w") as file:
-    print(m.status == GRB.OPTIMAL)
-    # Optimal value
-    print(f"Minimum distance: {m.objVal} \n", file=file)
-    # Home and away games
+# Solve the IP using the epsilon constrained method (minimizing)
+# Note that there is only one solution in this case
+count = 0
+while True:
+    x_sum = 0
     for i in range(0, n_teams):
-        print(f"Team {i}:", file=file)
-        print(f" Home games: {h[i].X:=2}", file=file)
-        print(f" Away games: {a[i].X:=2}", file=file)
-    # Schedule grouped by teams
-    print("\nSchedule grouped by teams: \n", file=file)
-    for i in range(0, n_teams):
-        print(f"Team {i}:", file=file)
-        for j in range(0, n_teams):
-            if (i == j):
-                    pass
-            else:
-                print(f" Games vs Team {j:=2}: ", end="", file=file)
-                for t in range(0, time):
-                    if x[i, j, t].x == 1:
-                        print(f"{t:=2} (Home) ", end="", file=file)
-                    elif x[j, i, t].x == 1:
-                        print(f"{t:=2} (Away) ", end="", file=file)
-                print("", file=file)
-    # Schedule grouped by timeslots
-    print("\nSchedule grouped by timeslots: \n", file=file)
-    for t in range(time):
-        print(f"Time Slot {t}:", file=file)
-        playing_teams = set()
-        for i in range(0, n_teams):
-            for j in range(0, n_teams):
-                if x[i, j, t].x == 1:
-                    print(f" Team {i:=2} (Home) vs Team {j:=2} (Away)", file=file)
-                    playing_teams.add(i)
-                    playing_teams.add(j)
-        for team in range(n_teams):
-            if team not in playing_teams:
-                print(f" Team {team:=2} not playing", file=file)
+        for j in range (0, n_teams):
+            for t in range (0, time):
+                x_sum += x[i, j, t]
+    m.addConstr(x_sum <= gamma, name="e-constrained")
+    m.optimize()
+    if m.status == GRB.OPTIMAL:     # Save the obtained solution if it is optimal
+        x_star = {v.varName: v.x for v in m.getVars()}
+        E.append(x_star)
+        min_distance.append(total_distance.getValue())
+        min_home_away.append(home_away.getValue())
+        ctx = 0
+        for i in range (0, n_teams):
+            ctx += dif_ha[i].x
+        gamma = ctx - 1             # Update gamma for the next iteration
+        
+        # Print the results to a file
+        with open("scheduling_output.txt", "w") as file:
+            print(m.status == GRB.OPTIMAL)
+            # Optimal values
+            print(f"Minimum total distance: {total_distance.getValue()}", file=file)
+            print(f"Minimum home and away difference: {home_away.getValue()}", file=file)
+            # Schedule grouped by teams
+            print("\nSchedule grouped by teams: \n", file=file)
+            for i in range(0, n_teams):
+                print(f"Team {i}:", file=file)
+                for j in range(0, n_teams):
+                    if (i == j):
+                            pass
+                    else:
+                        print(f" Game times vs Team {j:=2}: ", end="", file=file)
+                        for t in range(0, time):
+                            if x[i, j, t].x == 1:
+                                print(f"{t:=2} (Home) ", end="", file=file)
+                            elif x[j, i, t].x == 1:
+                                print(f"{t:=2} (Away) ", end="", file=file)
+                        print("", file=file)
+            # Schedule grouped by timeslots
+            print("\nSchedule grouped by timeslots: \n", file=file)
+            for t in range(time):
+                print(f"Time Slot {t}:", file=file)
+                playing_teams = set()
+                for i in range(0, n_teams):
+                    for j in range(0, n_teams):
+                        if x[i, j, t].x == 1:
+                            print(f" Team {i:=2} (Home) vs Team {j:=2} (Away)", file=file)
+                            playing_teams.add(i)
+                            playing_teams.add(j)
+                for team in range(n_teams):
+                    if team not in playing_teams:
+                        print(f" Team {team:=2} not playing", file=file)
+                        
+    else:                           # If the problem is infeasible, stop
+        break
+    
