@@ -108,15 +108,8 @@ for i in range(0, n_teams):
             m.addConstr(pairings >= minpairing, f"minpairing{i}{j}")
             m.addConstr(pairings <= maxpairing, f"maxpairing{i}{j}")
 
-        
-# Solve the model! # TO DO: change to epsilon constrained method
-# m.optimize()
-# m.computeIIS()
-# m.write("iis_report.ilp")
 
-
-# Solve the IP using the epsilon constrained method (minimizing)
-# Note that there is only one solution in this case
+# Solve the model using the epsilon constrained method for IPs (modified for minimizing problem)
 count = 0
 while True:
     x_sum = 0
