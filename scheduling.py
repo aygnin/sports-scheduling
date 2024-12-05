@@ -20,10 +20,10 @@ games = 20
 # Calculated data
 total_games = n_teams * games / 2
 games_t = math.floor(n_teams / 2)
-time = math.ceil(total_games / games_t) # TBD, may increase to include breaks
+time = math.ceil(total_games / games_t) # TBD, may increase to include breaks for complexity
 minpairing = math.floor(games / n_teams)
 maxpairing = math.ceil(games / n_teams)
-# Import the distances between teams
+# Import the distances between teams and round to integers
 f = open("distances.txt", "r")
 data = f.readlines()
 f.close()
@@ -47,12 +47,14 @@ a = m.addVars(n_teams, vtype = GRB.INTEGER, name = "a")
 dif_ha = m.addVars(n_teams, vtype = GRB.INTEGER, name = "dif_ha")
 
 
-# Set the objective function to minimize total distance travelled by all teams
+# Set the weighted objective function
+# Minimize the total distance travelled by all teams
 total_distance = 0
 for j in range(0, n_teams):
     for i in range (0, n_teams):
         for t in range (0, time):
             total_distance += x[i, j, t] * (distance[j][i] + distance[i][j])
+# Minimize the home and away game imbalance
 home_away = 0
 for i in range (0, n_teams):
     home_away += dif_ha[i]
