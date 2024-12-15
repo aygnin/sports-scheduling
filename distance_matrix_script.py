@@ -55,4 +55,4 @@ for i in range(num_unis):
 
 for i in range(num_unis):
     with open("distances.txt", "w") as file:
-        print(" ".join(distance_matrix[i]))
+        print(", ".join(distance_matrix[i]))
