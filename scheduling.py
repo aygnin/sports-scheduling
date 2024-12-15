@@ -20,7 +20,7 @@ games = 20
 # Calculated data
 total_games = n_teams * games / 2
 games_t = math.floor(n_teams / 2)
-time = math.ceil(total_games / games_t) # TBD, may increase to include breaks for complexity
+time = math.ceil(total_games / games_t)
 minpairing = math.floor(games / n_teams)
 maxpairing = math.ceil(games / n_teams)
 # Import the distances between teams and round to integers
